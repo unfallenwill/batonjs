@@ -82,18 +82,6 @@ export interface EngineResult {
   meta: ScriptMeta | null
 }
 
-// ── Internal context for agent adapter ────────────────────────────────
-
-export interface AgentContext {
-  semaphore: { acquire(): Promise<() => void> }
-  budget: { record(costUsd: number): boolean; spent(): number; remaining(): number | null }
-  bus: { on(handler: EngineEventHandler): () => void; emit(event: EngineEvent): void }
-  cwd?: string | undefined
-  defaultModel?: string | undefined
-  permissionMode?: PermissionMode | undefined
-  signal?: AbortSignal | undefined
-}
-
 // ── Script globals contract ───────────────────────────────────────────
 
 /** First argument to workflow(): script path ref or saved name */
@@ -110,7 +98,7 @@ export interface ScriptGlobals {
   log: (message: string) => void
   budget: BudgetHandle
   args: unknown
-  /** Execute a nested sub-workflow. Only one level of nesting allowed. */
+  /** Execute a nested sub-workflow. Only one level of nesting is allowed. */
   workflow: (ref: WorkflowRef, childArgs?: unknown) => Promise<unknown>
 }
 

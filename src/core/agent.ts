@@ -1,6 +1,7 @@
 import { query } from '@tencent-ai/agent-sdk'
 import type { Options, ResultMessage } from '@tencent-ai/agent-sdk'
-import type { AgentContext, AgentOpts } from '../types.js'
+import type { AgentContext } from './context.js'
+import type { AgentOpts } from '../types.js'
 
 /** Default timeout for a single agent call (ms) */
 const DEFAULT_AGENT_TIMEOUT_MS = 120_000

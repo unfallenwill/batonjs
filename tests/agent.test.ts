@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import type { AgentContext, AgentOpts } from '../src/types.js'
+import type { AgentContext } from '../src/core/context.js'
+import type { AgentOpts } from '../src/types.js'
 import type { Options, ResultMessage } from '@tencent-ai/agent-sdk'
 import { Semaphore } from '../src/utils/semaphore.js'
 import { BudgetTracker } from '../src/core/budget.js'
