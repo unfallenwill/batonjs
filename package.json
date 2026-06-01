@@ -1,6 +1,6 @@
 {
   "name": "agentflow",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A lightweight workflow engine that orchestrates AI agents using the CodeBuddy Agent SDK",
   "keywords": [
     "workflow",
@@ -42,8 +42,23 @@
     "dev": "tsx src/index.ts",
     "build": "tsdown",
     "start": "node dist/index.mjs",
-    "check": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "test": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src tests",
+    "lint:fix": "eslint src tests --fix",
+    "lint:deps": "depcruise src",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\"",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:deps",
+    "prepublishOnly": "npm run build",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=18"
@@ -54,8 +69,17 @@
   },
   "devDependencies": {
     "@types/node": "^25.9.1",
+    "@vitest/coverage-v8": "^4.1.8",
+    "dependency-cruiser": "^17.4.3",
+    "eslint": "^10.4.1",
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.7",
+    "prettier": "^3.8.3",
     "tsdown": "^0.22.1",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.60.1",
+    "vitest": "^4.1.8"
   }
 }

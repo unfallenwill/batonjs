@@ -1,21 +1,24 @@
-import type { Result } from './result.js';
+import type { Result } from './result.js'
+import type { Semaphore } from './concurrency.js'
+import type { BudgetTracker } from './budget.js'
+import type { EngineEventBus } from './events.js'
 
 // ── Script-facing types (globals injected into workflow scripts) ─────
 
 /** Options for the `agent()` global */
 export interface AgentOpts {
-  label?: string;
-  phase?: string;
+  label?: string
+  phase?: string
   /** JSON Schema → passed to SDK outputFormat for structured output */
-  schema?: Record<string, unknown>;
-  model?: string;
+  schema?: Record<string, unknown>
+  model?: string
 }
 
 /** The `budget` object exposed as a script global */
 export interface BudgetHandle {
-  total: number | null;
-  spent(): number;
-  remaining(): number | null;
+  total: number | null
+  spent(): number
+  remaining(): number | null
 }
 
 /** Discriminated union of all engine events */
@@ -28,39 +31,39 @@ export type EngineEvent =
   | { kind: 'agent_start'; label?: string | undefined; phase?: string | undefined }
   | { kind: 'agent_end'; label?: string | undefined; cost: number; duration_ms: number }
   | { kind: 'agent_error'; label?: string | undefined; error: string }
-  | { kind: 'budget_update'; spent: number; remaining: number | null };
+  | { kind: 'budget_update'; spent: number; remaining: number | null }
 
-export type EngineEventHandler = (event: EngineEvent) => void;
+export type EngineEventHandler = (event: EngineEvent) => void
 
 // ── Script meta export ────────────────────────────────────────────────
 
 /** Shape of a script's `export const meta = { ... }` */
 export interface ScriptMeta {
-  name: string;
-  description?: string;
-  phases?: Array<{ title: string; detail?: string }>;
-  [key: string]: unknown;
+  name: string
+  description?: string
+  phases?: Array<{ title: string; detail?: string }>
+  [key: string]: unknown
 }
 
 // ── Engine configuration ──────────────────────────────────────────────
 
 export interface EngineOptions {
   /** Path to the workflow script file */
-  scriptPath: string;
+  scriptPath: string
   /** Arguments forwarded into the script as the `args` global */
-  args?: unknown;
+  args?: unknown
   /** Maximum budget in USD; null or undefined means unlimited */
-  maxBudgetUsd?: number;
+  maxBudgetUsd?: number
   /** Maximum concurrent agent calls (default: 10) */
-  maxConcurrency?: number;
+  maxConcurrency?: number
   /** Working directory for agent sessions */
-  cwd?: string;
+  cwd?: string
   /** Default model if not specified in agent() opts */
-  defaultModel?: string;
+  defaultModel?: string
   /** Permission mode for all agent queries */
-  permissionMode?: PermissionMode;
+  permissionMode?: PermissionMode
   /** AbortSignal to cancel the entire workflow */
-  signal?: AbortSignal;
+  signal?: AbortSignal
 }
 
 type PermissionMode =
@@ -70,52 +73,50 @@ type PermissionMode =
   | 'plan'
   | 'delegate'
   | 'dontAsk'
-  | 'fullAccess';
+  | 'fullAccess'
 
 // ── Engine output ─────────────────────────────────────────────────────
 
 export interface EngineResult {
-  success: boolean;
-  result: unknown;
-  totalCostUsd: number;
-  durationMs: number;
-  meta: ScriptMeta | null;
+  success: boolean
+  result: unknown
+  totalCostUsd: number
+  durationMs: number
+  meta: ScriptMeta | null
 }
 
 // ── Internal context for agent adapter ────────────────────────────────
 
 export interface AgentContext {
-  semaphore: import('./concurrency.js').Semaphore;
-  budget: import('./budget.js').BudgetTracker;
-  bus: import('./events.js').EngineEventBus;
-  cwd?: string | undefined;
-  defaultModel?: string | undefined;
-  permissionMode?: PermissionMode | undefined;
-  signal?: AbortSignal | undefined;
+  semaphore: Semaphore
+  budget: BudgetTracker
+  bus: EngineEventBus
+  cwd?: string | undefined
+  defaultModel?: string | undefined
+  permissionMode?: PermissionMode | undefined
+  signal?: AbortSignal | undefined
 }
 
 // ── Script globals contract ───────────────────────────────────────────
 
 /** First argument to workflow(): script path ref or saved name */
-export type WorkflowRef = string | { scriptPath: string };
+export type WorkflowRef = string | { scriptPath: string }
 
 export interface ScriptGlobals {
-  agent: <T = unknown>(prompt: string, opts?: AgentOpts) => Promise<T | null>;
-  parallel: (thunks: Array<() => Promise<unknown>>) => Promise<unknown[]>;
+  agent: <T = unknown>(prompt: string, opts?: AgentOpts) => Promise<T | null>
+  parallel: (thunks: Array<() => Promise<unknown>>) => Promise<unknown[]>
   pipeline: (
     items: unknown[],
-    ...stages: Array<
-      (prev: unknown, original: unknown, index: number) => Promise<unknown>
-    >
-  ) => Promise<unknown[]>;
-  phase: (title: string) => void;
-  log: (message: string) => void;
-  budget: BudgetHandle;
-  args: unknown;
+    ...stages: Array<(prev: unknown, original: unknown, index: number) => Promise<unknown>>
+  ) => Promise<unknown[]>
+  phase: (title: string) => void
+  log: (message: string) => void
+  budget: BudgetHandle
+  args: unknown
   /** Execute a nested sub-workflow. Only one level of nesting allowed. */
-  workflow: (ref: WorkflowRef, childArgs?: unknown) => Promise<unknown>;
+  workflow: (ref: WorkflowRef, childArgs?: unknown) => Promise<unknown>
 }
 
 // ── Engine run return type ────────────────────────────────────────────
 
-export type EngineRunResult = Result<EngineResult, Error>;
+export type EngineRunResult = Result<EngineResult, Error>
