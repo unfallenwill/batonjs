@@ -5,6 +5,11 @@ import type { AgentContext, AgentOpts } from './types.js';
 /** Default timeout for a single agent call (ms) */
 const DEFAULT_AGENT_TIMEOUT_MS = 120_000;
 
+/** Internal error wrapper to distinguish SDK errors from null results */
+class QueryError {
+  constructor(public readonly message: string) {}
+}
+
 /**
  * Execute a single agent call via the SDK.
  *
@@ -70,13 +75,14 @@ export async function executeAgent<T = unknown>(
 
     // Execute query with timeout protection.
     // SDK's AsyncGenerator may hang on errors (e.g., 429),
-    // so we race it against a timeout that resolves to null.
+    // so we race it against a timeout that resolves to a sentinel.
+    const TIMEOUT_SENTINEL = Symbol('timeout');
     const q = query({ prompt, options: sdkOpts });
 
-    const timeoutPromise = new Promise<null>((resolve) => {
+    const timeoutPromise = new Promise<typeof TIMEOUT_SENTINEL>((resolve) => {
       timeoutId = setTimeout(() => {
         controller.abort();
-        resolve(null);
+        resolve(TIMEOUT_SENTINEL);
       }, DEFAULT_AGENT_TIMEOUT_MS);
     });
 
@@ -89,33 +95,43 @@ export async function executeAgent<T = unknown>(
           }
         }
         return resultMsg;
-      } catch {
-        // SDK may throw ExecutionError (e.g. 429), AbortError, etc.
-        // Return null to let the caller handle it as a soft failure.
-        return null;
+      } catch (e: unknown) {
+        // SDK throws ExecutionError (e.g. 429), AbortError, etc.
+        // Propagate the error message to the caller.
+        const msg = e instanceof Error ? e.message : String(e);
+        return new QueryError(msg) as unknown as null;
       }
     })();
 
-    const resultMsg = await Promise.race([queryPromise, timeoutPromise]);
+    const raceResult = await Promise.race([queryPromise, timeoutPromise]);
 
     // Clear timeout — query or timeout finished
     clearTimeout(timeoutId);
     timeoutId = undefined;
 
-    // If timeout won the race, signal the SDK child process to stop.
-    // Fire-and-forget: don't await — the process may be stuck.
-    if (resultMsg === null) {
+    // Handle timeout
+    if (raceResult === TIMEOUT_SENTINEL) {
       ctx.bus.emit({ kind: 'agent_error', label, error: `Agent timed out after ${DEFAULT_AGENT_TIMEOUT_MS / 1000}s` });
       try { q.interrupt(); } catch { /* best effort */ }
       try { q.return(); } catch { /* best effort */ }
+      return null;
     }
 
+    // Handle query error (e.g. 429 ExecutionError caught by IIFE)
+    if (raceResult instanceof QueryError) {
+      ctx.bus.emit({ kind: 'agent_error', label, error: raceResult.message });
+      return null;
+    }
+
+    const resultMsg = raceResult as ResultMessage | null;
+
+    // No result at all
     if (resultMsg === null) {
       ctx.bus.emit({ kind: 'agent_error', label, error: 'No result message received' });
       return null;
     }
 
-    // Error subtypes
+    // Error subtypes (non-success)
     if (resultMsg.subtype !== 'success') {
       const errPayload = resultMsg as unknown as { errors?: string[] };
       const errors = errPayload.errors ?? ['Unknown execution error'];
@@ -127,8 +143,11 @@ export async function executeAgent<T = unknown>(
       return null;
     }
 
+    // At this point resultMsg is the success variant with .result and .structured_output
+    const successMsg = resultMsg as ResultMessage & { result: string; structured_output?: unknown };
+
     // Record cost
-    const costUsd = resultMsg.total_cost_usd;
+    const costUsd = successMsg.total_cost_usd;
     const withinBudget = ctx.budget.record(costUsd);
 
     const duration = Date.now() - startTime;
@@ -140,15 +159,15 @@ export async function executeAgent<T = unknown>(
     }
 
     // Extract result: prefer structured_output when schema was provided
-    if (opts?.schema !== undefined && resultMsg.structured_output !== undefined) {
-      return resultMsg.structured_output as T;
+    if (opts?.schema !== undefined && successMsg.structured_output !== undefined) {
+      return successMsg.structured_output as T;
     }
 
     // Fall back: try JSON parse, otherwise return raw string
     try {
-      return JSON.parse(resultMsg.result) as T;
+      return JSON.parse(successMsg.result) as T;
     } catch {
-      return resultMsg.result as T;
+      return successMsg.result as T;
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
