@@ -6,10 +6,8 @@ import type { AgentOpts } from '../types.js'
 /** Default timeout for a single agent call (ms) */
 const DEFAULT_AGENT_TIMEOUT_MS = 120_000
 
-/** Internal error wrapper to distinguish SDK errors from null results */
-class QueryError {
-  constructor(public readonly message: string) {}
-}
+/** Internal discriminated return from the query IIFE */
+type QueryOutput = { ok: true; value: ResultMessage | null } | { ok: false; error: string }
 
 /**
  * Execute a single agent call via the SDK.
@@ -87,7 +85,7 @@ export async function executeAgent<T = unknown>(
       }, DEFAULT_AGENT_TIMEOUT_MS)
     })
 
-    const queryPromise = (async (): Promise<ResultMessage | null> => {
+    const queryPromise = (async (): Promise<QueryOutput> => {
       try {
         let resultMsg: ResultMessage | null = null
         for await (const message of q) {
@@ -95,12 +93,12 @@ export async function executeAgent<T = unknown>(
             resultMsg = message as ResultMessage
           }
         }
-        return resultMsg
+        return { ok: true, value: resultMsg }
       } catch (e: unknown) {
         // SDK throws ExecutionError (e.g. 429), AbortError, etc.
-        // Propagate the error message to the caller.
+        // Propagate the error message via the discriminated union.
         const msg = e instanceof Error ? e.message : String(e)
-        return new QueryError(msg) as unknown as null
+        return { ok: false, error: msg }
       }
     })()
 
@@ -130,13 +128,16 @@ export async function executeAgent<T = unknown>(
       return null
     }
 
+    // raceResult is now QueryOutput (timeout sentinel already handled above)
+    const queryOutput = raceResult as QueryOutput
+
     // Handle query error (e.g. 429 ExecutionError caught by IIFE)
-    if (raceResult instanceof QueryError) {
-      ctx.bus.emit({ kind: 'agent_error', label, error: raceResult.message })
+    if (!queryOutput.ok) {
+      ctx.bus.emit({ kind: 'agent_error', label, error: queryOutput.error })
       return null
     }
 
-    const resultMsg = raceResult as ResultMessage | null
+    const resultMsg = queryOutput.value
 
     // No result at all
     if (resultMsg === null) {

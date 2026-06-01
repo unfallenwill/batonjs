@@ -21,7 +21,11 @@ export class EngineEventBus {
   /** Emit an event to all subscribers (synchronous). */
   emit(event: EngineEvent): void {
     for (const handler of this.listeners) {
-      handler(event)
+      try {
+        handler(event)
+      } catch (error: unknown) {
+        console.error('[AgentFlow] Event handler threw:', error)
+      }
     }
   }
 }

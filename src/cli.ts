@@ -49,6 +49,10 @@ for (let i = 1; i < argv.length; i++) {
         process.exit(1)
       }
       maxBudgetUsd = parseFloat(next)
+      if (Number.isNaN(maxBudgetUsd)) {
+        console.error(`--budget requires a number, got: ${next}`)
+        process.exit(1)
+      }
       i++
       break
     case '--concurrency':
@@ -57,6 +61,10 @@ for (let i = 1; i < argv.length; i++) {
         process.exit(1)
       }
       maxConcurrency = parseInt(next, 10)
+      if (Number.isNaN(maxConcurrency)) {
+        console.error(`--concurrency requires an integer, got: ${next}`)
+        process.exit(1)
+      }
       i++
       break
     case '--cwd':

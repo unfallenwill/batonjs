@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { EngineEventBus } from '../src/core/events.js'
 
 describe('EngineEventBus', () => {
@@ -49,5 +49,29 @@ describe('EngineEventBus', () => {
     unsub1()
     bus.emit({ kind: 'log', message: 'second' })
     expect(received).toEqual(['a:phase', 'b:phase', 'b:log'])
+  })
+
+  it('handler throwing error does not break other handlers', () => {
+    const bus = new EngineEventBus()
+    const received: string[] = []
+    bus.on((e) => received.push(`first:${e.kind}`))
+    bus.on(() => {
+      throw new Error('boom')
+    })
+    bus.on((e) => received.push(`third:${e.kind}`))
+    bus.emit({ kind: 'phase', title: 'test' })
+    expect(received).toEqual(['first:phase', 'third:phase'])
+  })
+
+  it('handler throwing error logs to console.error', () => {
+    const bus = new EngineEventBus()
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    bus.on(() => {
+      throw new Error('boom')
+    })
+    bus.emit({ kind: 'log', message: 'test' })
+    expect(errorSpy).toHaveBeenCalledTimes(1)
+    expect(errorSpy).toHaveBeenCalledWith('[AgentFlow] Event handler threw:', expect.any(Error))
+    errorSpy.mockRestore()
   })
 })
