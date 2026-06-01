@@ -2,6 +2,9 @@ import { query } from '@tencent-ai/agent-sdk';
 import type { Options, ResultMessage } from '@tencent-ai/agent-sdk';
 import type { AgentContext, AgentOpts } from './types.js';
 
+/** Default timeout for a single agent call (ms) */
+const DEFAULT_AGENT_TIMEOUT_MS = 120_000;
+
 /**
  * Execute a single agent call via the SDK.
  *
@@ -9,6 +12,7 @@ import type { AgentContext, AgentOpts } from './types.js';
  * - Passes `schema` as SDK `outputFormat` for structured output.
  * - Tracks spending via BudgetTracker.
  * - Returns `null` on any failure (soft failure pattern).
+ * - Times out if the SDK process hangs.
  */
 export async function executeAgent<T = unknown>(
   prompt: string,
@@ -23,10 +27,15 @@ export async function executeAgent<T = unknown>(
   const release = await ctx.semaphore.acquire();
   const startTime = Date.now();
 
+  // Create a per-call AbortController for timeout + signal forwarding
+  const controller = new AbortController();
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
   try {
     // Build SDK options
     const sdkOpts: Options = {
       permissionMode: ctx.permissionMode ?? 'bypassPermissions',
+      abortController: controller,
     };
 
     if (opts?.schema !== undefined) {
@@ -49,11 +58,8 @@ export async function executeAgent<T = unknown>(
       sdkOpts.maxBudgetUsd = remaining;
     }
 
-    // Forward abort signal
+    // Forward engine-level abort signal
     if (ctx.signal !== undefined) {
-      const controller = new AbortController();
-      sdkOpts.abortController = controller;
-
       if (ctx.signal.aborted) {
         controller.abort();
       } else {
@@ -62,14 +68,46 @@ export async function executeAgent<T = unknown>(
       }
     }
 
-    // Execute query and extract the ResultMessage
+    // Execute query with timeout protection.
+    // SDK's AsyncGenerator may hang on errors (e.g., 429),
+    // so we race it against a timeout that resolves to null.
     const q = query({ prompt, options: sdkOpts });
 
-    let resultMsg: ResultMessage | null = null;
-    for await (const message of q) {
-      if (message.type === 'result') {
-        resultMsg = message as ResultMessage;
+    const timeoutPromise = new Promise<null>((resolve) => {
+      timeoutId = setTimeout(() => {
+        controller.abort();
+        resolve(null);
+      }, DEFAULT_AGENT_TIMEOUT_MS);
+    });
+
+    const queryPromise = (async (): Promise<ResultMessage | null> => {
+      try {
+        let resultMsg: ResultMessage | null = null;
+        for await (const message of q) {
+          if (message.type === 'result') {
+            resultMsg = message as ResultMessage;
+          }
+        }
+        return resultMsg;
+      } catch {
+        // SDK may throw ExecutionError (e.g. 429), AbortError, etc.
+        // Return null to let the caller handle it as a soft failure.
+        return null;
       }
+    })();
+
+    const resultMsg = await Promise.race([queryPromise, timeoutPromise]);
+
+    // Clear timeout — query or timeout finished
+    clearTimeout(timeoutId);
+    timeoutId = undefined;
+
+    // If timeout won the race, signal the SDK child process to stop.
+    // Fire-and-forget: don't await — the process may be stuck.
+    if (resultMsg === null) {
+      ctx.bus.emit({ kind: 'agent_error', label, error: `Agent timed out after ${DEFAULT_AGENT_TIMEOUT_MS / 1000}s` });
+      try { q.interrupt(); } catch { /* best effort */ }
+      try { q.return(); } catch { /* best effort */ }
     }
 
     if (resultMsg === null) {
@@ -117,7 +155,7 @@ export async function executeAgent<T = unknown>(
     ctx.bus.emit({ kind: 'agent_error', label, error: message });
     return null;
   } finally {
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
     release();
   }
 }
-

@@ -138,7 +138,7 @@ export class Engine {
         }),
 
       parallel: (thunks: Array<() => Promise<unknown>>) =>
-        parallelExecute(thunks, this.semaphore),
+        parallelExecute(thunks),
 
       pipeline: (
         items: unknown[],
