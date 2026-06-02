@@ -160,6 +160,15 @@ export async function executeAgent<T = unknown>(
       sdkOpts.outputFormat = { type: 'json_schema', schema: opts.schema }
     }
 
+    // When schema is provided, inject it into the prompt so the model knows
+    // the expected output structure. The SDK outputFormat is also set above
+    // for forward compatibility, but current SDK versions don't wire it through
+    // to the CLI — so the prompt injection is the actual working path.
+    let effectivePrompt = prompt
+    if (opts?.schema !== undefined) {
+      effectivePrompt = `${prompt}\n\nYou must respond with valid JSON matching this schema (no markdown fences, no explanation, only the JSON):\n${JSON.stringify(opts.schema, null, 2)}`
+    }
+
     if (opts?.model !== undefined) {
       sdkOpts.model = opts.model
     } else if (ctx.defaultModel !== undefined) {
@@ -214,7 +223,7 @@ export async function executeAgent<T = unknown>(
       }
 
       const attemptResult = await executeQueryAttempt(
-        prompt,
+        effectivePrompt,
         sdkOpts,
         controller,
         DEFAULT_AGENT_TIMEOUT_MS,
