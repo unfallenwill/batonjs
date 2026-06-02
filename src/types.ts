@@ -75,6 +75,8 @@ export interface EngineOptions {
   permissionMode?: PermissionMode
   /** SDK backend to use. Default: 'anthropic' */
   sdk?: SdkName
+  /** Timeout in ms for every agent call in this workflow (default: 120000) */
+  agentTimeoutMs?: number
   /** AbortSignal to cancel the entire workflow */
   signal?: AbortSignal
 }

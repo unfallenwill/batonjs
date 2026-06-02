@@ -19,10 +19,12 @@ cli
   .option('--cwd <dir>', 'Working directory for agents (default: .)')
   .option('--model <model>', 'Default model for agents')
   .option('--sdk <name>', "SDK backend: 'anthropic' (default) or 'codebuddy'")
+  .option('--timeout <minutes>', 'Agent call timeout in minutes (default: 2)')
   .example('batonjs ./workflows/demo.js')
   .example('batonjs --sdk codebuddy ./workflows/demo.js')
   .example('batonjs ./workflows/demo.js --args \'{"target": "src/"}\'')
   .example('batonjs ./workflows/demo.js --budget 5.0 --concurrency 5')
+  .example('batonjs ./workflows/demo.js --timeout 5')
   .action((script: string | undefined, options: Record<string, unknown>) => {
     if (script === undefined) {
       cli.outputHelp()
@@ -78,6 +80,13 @@ cli
     if (maxConcurrency !== undefined) engineOpts.maxConcurrency = maxConcurrency
     if (options['model'] !== undefined) engineOpts.defaultModel = String(options['model'])
     if (sdk !== undefined) engineOpts.sdk = sdk
+    if (options['timeout'] !== undefined) {
+      const minutes = parseFloat(String(options['timeout']))
+      if (Number.isNaN(minutes) || minutes <= 0) {
+        fatal(`--timeout requires a positive number (minutes), got: ${String(options['timeout'])}`)
+      }
+      engineOpts.agentTimeoutMs = Math.round(minutes * 60_000)
+    }
 
     const engine = new Engine(engineOpts)
 

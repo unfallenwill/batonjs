@@ -153,6 +153,7 @@ export class Engine {
           defaultModel: this.opts.defaultModel,
           permissionMode: this.opts.permissionMode,
           signal: this.opts.signal,
+          agentTimeoutMs: this.opts.agentTimeoutMs,
         }),
 
       parallel: (thunks: Array<() => Promise<unknown>>) =>

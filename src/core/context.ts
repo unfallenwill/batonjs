@@ -17,4 +17,5 @@ export interface AgentContext {
   defaultModel?: string | undefined
   permissionMode?: PermissionMode | undefined
   signal?: AbortSignal | undefined
+  agentTimeoutMs?: number | undefined
 }

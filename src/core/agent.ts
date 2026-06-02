@@ -231,7 +231,7 @@ export async function executeAgent<T = unknown>(
         effectivePrompt,
         sdkOpts,
         controller,
-        DEFAULT_AGENT_TIMEOUT_MS,
+        ctx.agentTimeoutMs ?? DEFAULT_AGENT_TIMEOUT_MS,
       )
       queryOutput = attemptResult.output
 
