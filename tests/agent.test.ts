@@ -374,7 +374,8 @@ describe('executeAgent', () => {
     })
 
     vi.useFakeTimers()
-    const promise = executeAgent('test', undefined, ctx)
+    // Use a short timeout so the promise settles without advancing 300s
+    const promise = executeAgent('test', undefined, { ...ctx, agentTimeoutMs: 5000 })
 
     // Advance timers to let the query start
     await vi.advanceTimersByTimeAsync(0)
@@ -388,7 +389,7 @@ describe('executeAgent', () => {
     expect(capturedSdkOpts?.abortController?.signal.aborted).toBe(true)
 
     // Let the timeout fire so the promise settles
-    await vi.advanceTimersByTimeAsync(120_000)
+    await vi.advanceTimersByTimeAsync(10_000)
     await promise
   })
 
@@ -576,13 +577,13 @@ describe('executeAgent', () => {
       })
     })
 
-    const ctx = makeContext()
+    const ctx = makeContext({ agentTimeoutMs: 5000 })
     const events = collectEvents(ctx.bus)
 
     const promise = executeAgent('test', undefined, ctx)
 
-    // Advance past the 120s timeout
-    await vi.advanceTimersByTimeAsync(120_000)
+    // Advance past the 5s timeout
+    await vi.advanceTimersByTimeAsync(10_000)
 
     const result = await promise
     expect(result).toBeNull()
@@ -591,7 +592,7 @@ describe('executeAgent', () => {
     expect(errorEvent).toEqual({
       kind: 'agent_error',
       label: undefined,
-      error: 'Agent timed out after 120s',
+      error: 'Agent timed out after 5s',
     })
   })
 
