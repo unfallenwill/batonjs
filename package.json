@@ -14,7 +14,7 @@
     "batonjs"
   ],
   "author": "caosen",
-  "license": "ISC",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/unfallenwill/batonjs.git"
