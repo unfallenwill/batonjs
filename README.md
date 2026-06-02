@@ -1,3 +1,6 @@
+<p align="center">
+  <img src="./assets/brand/batonjs-logo.svg" alt="BatonJS" width="560">
+</p>
 <!-- Lightweight TypeScript workflow engine that turns JS/TS scripts into AI agent pipelines with pluggable Claude, CodeBuddy, and Codex SDK backends. -->
 
 # BatonJS
@@ -6,8 +9,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js >=18](https://img.shields.io/node/v/batonjs.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg)](https://www.typescriptlang.org/)
-
-**A lightweight workflow engine compatible with [Claude Code](https://claude.ai/code) dynamic workflow scripts, with pluggable Claude / CodeBuddy / Codex backends. Turn a plain `.js` file into a multi-agent AI workflow.**
 
 BatonJS lets you write multi-agent AI workflows as plain async JavaScript or TypeScript scripts, with simple globals like `agent()`, `parallel()`, and `pipeline()` that handle concurrency, budgeting, retries, and structured output validation automatically. It's SDK-agnostic out of the box, supporting Anthropic Claude, Tencent CodeBuddy, and OpenAI Codex through pluggable adapters — swap backends without rewriting your workflows. Whether you're running a one-off automation or a production pipeline, BatonJS gives you deterministic control flow with the ergonomics of a script and the reliability of an engine.
 
