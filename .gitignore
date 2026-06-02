@@ -2,3 +2,7 @@ node_modules/
 dist/
 *.js.map
 coverage/
+
+# Workflow scripts (local only)
+.claude/workflows/
+.batonjs/
