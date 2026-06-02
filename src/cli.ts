@@ -133,6 +133,19 @@ engine.on((event) => {
     case 'workflow_error':
       console.error(`💥 ${event.error}`)
       break
+    case 'pipeline_error':
+      console.error(
+        `  ⚠️ pipeline error at item ${event.index}${event.stage !== undefined ? ` stage ${event.stage}` : ''}: ${event.error}`,
+      )
+      break
+    case 'parallel_error':
+      console.error(`  ⚠️ parallel error at thunk ${event.index}: ${event.error}`)
+      break
+    default: {
+      const _exhaustive: never = event
+      void _exhaustive
+      break
+    }
   }
 })
 

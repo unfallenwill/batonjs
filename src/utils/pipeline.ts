@@ -1,3 +1,9 @@
+/** Options for pipeline execution */
+export interface PipelineOptions {
+  /** Called when a stage throws for an item, before the item resolves to null. */
+  onError?: (error: unknown, index: number, stageIndex: number) => void
+}
+
 /**
  * Streaming pipeline: each item flows through all stages independently.
  *
@@ -6,19 +12,24 @@
  *
  * @param items    Source items to process
  * @param stages   Transformation stages; each receives (prevResult, originalItem, index)
+ * @param options  Optional configuration including error callback
  * @returns        Array aligned with input; null where an item was dropped
  */
 export async function pipelineExecute(
   items: unknown[],
   stages: Array<(prev: unknown, original: unknown, index: number) => Promise<unknown>>,
+  options?: PipelineOptions,
 ): Promise<unknown[]> {
   return Promise.all(
     items.map(async (item, index) => {
       let current: unknown = item
-      for (const stage of stages) {
+      for (let stageIndex = 0; stageIndex < stages.length; stageIndex++) {
+        const stage = stages[stageIndex]
+        if (stage === undefined) continue
         try {
           current = await stage(current, item, index)
-        } catch {
+        } catch (error: unknown) {
+          options?.onError?.(error, index, stageIndex)
           return null
         }
         if (current === null || current === undefined) {

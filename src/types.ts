@@ -31,6 +31,8 @@ export type EngineEvent =
   | { kind: 'agent_end'; label?: string | undefined; cost: number; duration_ms: number }
   | { kind: 'agent_error'; label?: string | undefined; error: string }
   | { kind: 'budget_update'; spent: number; remaining: number | null }
+  | { kind: 'pipeline_error'; error: string; index: number; stage?: number }
+  | { kind: 'parallel_error'; error: string; index: number }
 
 export type EngineEventHandler = (event: EngineEvent) => void
 

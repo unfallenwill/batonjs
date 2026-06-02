@@ -135,12 +135,24 @@ export class Engine {
           signal: this.opts.signal,
         }),
 
-      parallel: (thunks: Array<() => Promise<unknown>>) => parallelExecute(thunks),
+      parallel: (thunks: Array<() => Promise<unknown>>) =>
+        parallelExecute(thunks, {
+          onError: (error, index) => {
+            const message = error instanceof Error ? error.message : String(error)
+            this.bus.emit({ kind: 'parallel_error', error: message, index })
+          },
+        }),
 
       pipeline: (
         items: unknown[],
         ...stages: Array<(prev: unknown, original: unknown, index: number) => Promise<unknown>>
-      ) => pipelineExecute(items, stages),
+      ) =>
+        pipelineExecute(items, stages, {
+          onError: (error, index, stage) => {
+            const message = error instanceof Error ? error.message : String(error)
+            this.bus.emit({ kind: 'pipeline_error', error: message, index, stage })
+          },
+        }),
 
       phase: (title: string) => {
         this.bus.emit({ kind: 'phase', title })

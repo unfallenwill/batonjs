@@ -665,4 +665,32 @@ return { sum: x + y }
       },
     )
   })
+
+  it('emits pipeline_error event when pipeline stage throws', async () => {
+    await withScript(
+      `
+const results = await pipeline(
+  [1, 2, 3],
+  async (n) => {
+    if (n === 2) throw new Error('boom')
+    return n
+  },
+)
+return { results }
+`,
+      async (scriptPath) => {
+        const engine = new Engine({ scriptPath, cwd: process.cwd() })
+        const events: Array<{ kind: string; [key: string]: unknown }> = []
+        engine.on((e) => events.push(e))
+
+        const result = await engine.run()
+        expect(result.ok).toBe(true)
+
+        const pipelineErrors = events.filter((e) => e.kind === 'pipeline_error')
+        expect(pipelineErrors).toHaveLength(1)
+        expect(pipelineErrors[0]?.error).toBe('boom')
+        expect(pipelineErrors[0]?.index).toBe(1)
+      },
+    )
+  })
 })

@@ -65,4 +65,42 @@ describe('pipeline', () => {
     const results = await pipelineExecute([], [])
     expect(results).toEqual([])
   })
+
+  it('calls onError with error, index, and stageIndex when a stage throws', async () => {
+    const errors: Array<{ error: unknown; index: number; stage: number }> = []
+    const results = await pipelineExecute(
+      [1, 2, 3],
+      [
+        async (n) => {
+          if (n === 2) throw new Error('stage-0 fail')
+          return n
+        },
+        async (n) => n * 10,
+      ],
+      {
+        onError: (error, index, stage) => errors.push({ error, index, stage }),
+      },
+    )
+    expect(results).toEqual([10, null, 30])
+    expect(errors).toHaveLength(1)
+    expect(errors[0]).toEqual({
+      error: expect.any(Error),
+      index: 1,
+      stage: 0,
+    })
+    expect((errors[0]?.error as Error).message).toBe('stage-0 fail')
+  })
+
+  it('works without options (backward compatible)', async () => {
+    const results = await pipelineExecute(
+      [1, 2],
+      [
+        async (n) => {
+          if (n === 2) throw new Error('fail')
+          return n
+        },
+      ],
+    )
+    expect(results).toEqual([1, null])
+  })
 })
