@@ -83,6 +83,15 @@ describe('Semaphore', () => {
   })
 })
 
+it('throws RangeError when max is 0', () => {
+  expect(() => new Semaphore(0)).toThrow(RangeError)
+  expect(() => new Semaphore(0)).toThrow('must be >= 1')
+})
+
+it('throws RangeError when max is negative', () => {
+  expect(() => new Semaphore(-1)).toThrow(RangeError)
+})
+
 describe('parallelExecute', () => {
   it('executes all thunks and returns results', async () => {
     const results = await parallelExecute([

@@ -40,7 +40,13 @@ for (let i = 1; i < argv.length; i++) {
         console.error('--args requires a JSON value')
         process.exit(1)
       }
-      workflowArgs = JSON.parse(next)
+      try {
+        workflowArgs = JSON.parse(next)
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : String(e)
+        console.error(`Invalid JSON for --args: ${next}\nParse error: ${msg}`)
+        process.exit(1)
+      }
       i++
       break
     case '--budget':

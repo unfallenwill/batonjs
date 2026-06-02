@@ -773,6 +773,43 @@ describe('executeAgent', () => {
     })
   })
 
+  it('wakes up from retry backoff when signal is aborted', async () => {
+    vi.useFakeTimers()
+
+    let callCount = 0
+    queryMock.mockImplementation(() => {
+      callCount++
+      const iterator = {
+        async *[Symbol.asyncIterator]() {
+          throw new Error('429 rate limited')
+        },
+      }
+      return Object.assign(iterator, { interrupt: vi.fn(), return: vi.fn() })
+    })
+
+    const bus = new EngineEventBus()
+    const budget = new BudgetTracker(null, bus)
+    const semaphore = new Semaphore(10)
+    const controller = new AbortController()
+    const ctx: AgentContext = { bus, budget, semaphore, signal: controller.signal }
+
+    const promise = executeAgent('test', { maxRetries: 3 }, ctx)
+
+    // Advance 500ms into the backoff delay (delay could be up to 2s for attempt 0)
+    await vi.advanceTimersByTimeAsync(500)
+
+    // Abort during backoff
+    controller.abort()
+
+    // Advance timers to let the abort resolve
+    await vi.advanceTimersByTimeAsync(100)
+
+    const result = await promise
+    expect(result).toBeNull()
+    // Should not have retried after abort — only the first call happened
+    expect(callCount).toBe(1)
+  })
+
   it('cleans up timeout in finally block on success', async () => {
     vi.useFakeTimers()
     vi.spyOn(globalThis, 'clearTimeout')

@@ -14,7 +14,11 @@ export class Semaphore {
   private running = 0
   private readonly queue: Array<() => void> = []
 
-  constructor(private readonly max: number) {}
+  constructor(private readonly max: number) {
+    if (max < 1) {
+      throw new RangeError(`Semaphore maxConcurrency must be >= 1, got ${max}`)
+    }
+  }
 
   async acquire(): Promise<() => void> {
     if (this.running < this.max) {

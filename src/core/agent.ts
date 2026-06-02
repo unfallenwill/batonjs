@@ -248,8 +248,21 @@ export async function executeAgent<T = unknown>(
           label,
           error: `${lastError} (retry ${attempt + 1}/${maxRetries} in ${delay}ms)`,
         })
-        await new Promise((resolve) => {
+        // Abort-signal-aware sleep: resolves early if signal fires during backoff
+        await new Promise<void>((resolve) => {
           timeoutId = setTimeout(resolve, delay)
+          if (controller.signal.aborted) {
+            clearTimeout(timeoutId)
+            timeoutId = undefined
+            resolve()
+            return
+          }
+          const onSleepAbort = () => {
+            clearTimeout(timeoutId)
+            timeoutId = undefined
+            resolve()
+          }
+          controller.signal.addEventListener('abort', onSleepAbort, { once: true })
         })
         timeoutId = undefined
       }
