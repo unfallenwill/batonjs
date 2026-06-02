@@ -43,6 +43,49 @@ function buildThreadOptions(options: SdkQueryOptions): Record<string, unknown> {
   return threadOpts
 }
 
+/**
+ * Normalize a JSON Schema for OpenAI Structured Output compatibility.
+ *
+ * OpenAI requires:
+ *   - `additionalProperties: false` on every object
+ *   - All properties listed in `required`
+ *
+ * This mutates the schema in place (deep walk).
+ */
+function normalizeSchemaForOpenAI(schema: Record<string, unknown>): void {
+  if (schema['type'] === 'object' && schema['properties'] !== undefined) {
+    const props = schema['properties'] as Record<string, unknown>
+    schema['additionalProperties'] = false
+    schema['required'] = Object.keys(props)
+    for (const value of Object.values(props)) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
+        normalizeSchemaForOpenAI(value as Record<string, unknown>)
+      }
+    }
+  }
+
+  // Walk array items
+  if (
+    schema['items'] !== undefined &&
+    typeof schema['items'] === 'object' &&
+    schema['items'] !== null
+  ) {
+    normalizeSchemaForOpenAI(schema['items'] as Record<string, unknown>)
+  }
+
+  // Walk anyOf / oneOf branches
+  for (const key of ['anyOf', 'oneOf', 'allOf'] as const) {
+    const branch = schema[key]
+    if (Array.isArray(branch)) {
+      for (const item of branch) {
+        if (typeof item === 'object' && item !== null) {
+          normalizeSchemaForOpenAI(item as Record<string, unknown>)
+        }
+      }
+    }
+  }
+}
+
 /** Build Codex TurnOptions from BatonJS SdkQueryOptions. */
 function buildTurnOptions(options: SdkQueryOptions): Record<string, unknown> {
   const turnOpts: Record<string, unknown> = {}
@@ -50,7 +93,13 @@ function buildTurnOptions(options: SdkQueryOptions): Record<string, unknown> {
     turnOpts['signal'] = options.abortController.signal
   }
   if (options.outputFormat !== undefined) {
-    turnOpts['outputSchema'] = options.outputFormat.schema
+    // Deep-clone before mutating to avoid polluting the caller's schema
+    const cloned = JSON.parse(JSON.stringify(options.outputFormat.schema)) as Record<
+      string,
+      unknown
+    >
+    normalizeSchemaForOpenAI(cloned)
+    turnOpts['outputSchema'] = cloned
   }
   return turnOpts
 }
