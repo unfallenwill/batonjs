@@ -2,6 +2,19 @@
   <title id="title">BatonJS icon</title>
   <desc id="desc">A modern geometric B mark built from a baton stem and two flowing agent paths.</desc>
   <defs>
+    <style>
+      .icon-bg { fill: #08111F; }
+      .icon-primary { stroke: #F8FAFC; }
+      .accent-strong { stroke: #22D3EE; fill: #22D3EE; }
+      .accent-soft { fill: #2DD4BF; }
+
+      @media (prefers-color-scheme: dark) {
+        .icon-bg { fill: #F8FAFC; }
+        .icon-primary { stroke: #08111F; }
+        .accent-strong { stroke: #0891B2; fill: #0891B2; }
+        .accent-soft { fill: #0F766E; }
+      }
+    </style>
     <linearGradient id="flow" x1="65" y1="184" x2="190" y2="58" gradientUnits="userSpaceOnUse">
       <stop stop-color="#22D3EE"/>
       <stop offset="1" stop-color="#2DD4BF"/>
@@ -10,11 +23,11 @@
       <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#020617" flood-opacity="0.18"/>
     </filter>
   </defs>
-  <rect x="24" y="24" width="208" height="208" rx="46" fill="#08111F" filter="url(#shadow)"/>
-  <path d="M76 184V56" stroke="#F8FAFC" stroke-width="20" stroke-linecap="round"/>
+  <rect class="icon-bg" x="24" y="24" width="208" height="208" rx="46" filter="url(#shadow)"/>
+  <path class="icon-primary" d="M76 184V56" stroke-width="20" stroke-linecap="round"/>
   <path d="M76 66H136C164 66 184 82 184 106C184 130 164 145 136 145H76" stroke="url(#flow)" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M76 112H142C174 112 196 129 196 156C196 179 175 194 142 194H76" stroke="#F8FAFC" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M99 171L176 79" stroke="#22D3EE" stroke-width="8" stroke-linecap="round"/>
-  <circle cx="76" cy="56" r="8" fill="#22D3EE"/>
-  <circle cx="196" cy="156" r="8" fill="#2DD4BF"/>
+  <path class="icon-primary" d="M76 112H142C174 112 196 129 196 156C196 179 175 194 142 194H76" stroke-width="19" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="accent-strong" d="M99 171L176 79" stroke-width="8" stroke-linecap="round"/>
+  <circle class="accent-strong" cx="76" cy="56" r="8"/>
+  <circle class="accent-soft" cx="196" cy="156" r="8"/>
 </svg>

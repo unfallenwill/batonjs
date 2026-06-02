@@ -10,8 +10,9 @@ It combines three project ideas:
 
 ## Assets
 
-- `batonjs-logo.svg` — full lockup for README headers, docs, websites, and social previews.
-- `batonjs-icon.svg` — square app/package icon for favicons, avatars, and compact UI.
+- `batonjs-logo.svg` — universal full lockup with its own light panel, suitable for Markdown embeds on both light and dark backgrounds.
+- `batonjs-logo-dark.svg` — full lockup for dark backgrounds.
+- `batonjs-icon.svg` — square app/package icon for favicons, avatars, and compact UI. It also adapts with `prefers-color-scheme`.
 
 ## Positioning Line
 
@@ -25,14 +26,15 @@ Short:
 
 ## Palette
 
-- Ink: `#0F172A`
 - Deep ink: `#08111F`
 - Ink: `#0F172A`
 - Cyan: `#22D3EE`
 - Teal: `#2DD4BF`
+- Muted dark text: `#475569`
+- Muted light text: `#CBD5E1`
 - Surface: `#F8FAFC`
 - Border: `#E2E8F0`
 
 ## Usage
 
-Use the icon at small sizes and the full lockup where the wordmark needs to be readable. Keep at least one icon-node width of clear space around the mark.
+Use the icon at small sizes and the full lockup where the wordmark needs to be readable. Use `batonjs-logo.svg` by default in README, npm, and other Markdown contexts because it carries its own panel and remains readable on both light and dark backgrounds. Use `batonjs-logo-dark.svg` only when the surrounding layout already controls dark-mode logo switching. Keep at least one icon-node width of clear space around the mark.
