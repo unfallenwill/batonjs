@@ -2,6 +2,8 @@
   <img src="./assets/brand/batonjs-logo.svg" alt="BatonJS" width="560">
 </p>
 
+# BatonJS
+
 A lightweight workflow engine that orchestrates AI agents via pluggable SDK backends.
 Write workflows as plain `.js`/`.ts` scripts — `parallel()`, `pipeline()`, and budget tracking built in.
 
@@ -111,7 +113,7 @@ Your workflow script receives these globals:
 | `phase(title)` | Mark the current execution phase (for logging) |
 | `log(message)` | Emit a log message |
 | `budget` | `{ total, spent(), remaining() }` — real-time budget info |
-| `args` | Custom arguments from `--args` or `EngineOptions.args` |
+| `args` | Custom arguments passed via `--args` |
 | `workflow(ref, args?)` | Run a nested sub-workflow (one level max) |
 
 ## License
