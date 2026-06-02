@@ -299,11 +299,14 @@ export async function executeAgent<T = unknown>(
       return successMsg.structured_output as T
     }
 
-    // Fall back: try JSON parse, otherwise return raw string
+    // Fall back: try JSON parse (strip markdown fences if present), otherwise raw string
+    const raw = successMsg.result
     try {
-      return JSON.parse(successMsg.result) as T
+      // Some models wrap JSON in ```json ... ``` — strip before parsing
+      const stripped = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
+      return JSON.parse(stripped) as T
     } catch {
-      return successMsg.result as T
+      return raw as T
     }
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)

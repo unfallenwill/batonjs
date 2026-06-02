@@ -7,39 +7,79 @@ export const meta = {
   ],
 }
 
+// ── Schemas ───────────────────────────────────────────────────
+const SCAN_SCHEMA = {
+  type: 'object',
+  properties: {
+    strengths: {
+      type: 'array',
+      items: { type: 'string', description: 'What the codebase does well' },
+    },
+    weaknesses: {
+      type: 'array',
+      items: { type: 'string', description: 'Architecture or design gaps' },
+    },
+    missingFeatures: {
+      type: 'array',
+      items: { type: 'string', description: 'Features a workflow engine should have' },
+    },
+    issues: {
+      type: 'array',
+      items: { type: 'string', description: 'Code quality, error handling, testing, performance issues' },
+    },
+  },
+  required: ['strengths', 'weaknesses', 'missingFeatures', 'issues'],
+}
+
+const REVIEW_SCHEMA = {
+  type: 'object',
+  properties: {
+    improvements: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          title: {
+            type: 'string',
+            description: 'Imperative, e.g. "Add retry with backoff to agent calls"',
+          },
+          problem: { type: 'string', description: '1-2 sentences describing the issue' },
+          solution: {
+            type: 'string',
+            description: 'Concrete: file names, what to change',
+          },
+          effortMinutes: { type: 'number', description: 'Estimated effort in minutes' },
+          impact: { type: 'string', enum: ['high', 'medium', 'low'] },
+        },
+        required: ['title', 'problem', 'solution', 'effortMinutes', 'impact'],
+      },
+    },
+  },
+  required: ['improvements'],
+}
+
+// ── Phase 1: Scan ─────────────────────────────────────────────
+
 phase('scan')
 
-const scanResult = await agent(
+const scan = await agent(
   [
     'Read ALL source files in src/ and ALL test files in tests/ of the AgentFlow project at /home/caosen/GitHub/agentflow.',
     '',
     'This is a TypeScript workflow engine that orchestrates AI agents via the CodeBuddy Agent SDK.',
     '',
-    'After reading, output a single JSON object with these fields:',
-    '  strengths: string[] - what the codebase does well',
-    '  weaknesses: string[] - architecture or design gaps',
-    '  missingFeatures: string[] - features a workflow engine should have',
-    '  issues: string[] - code quality, error handling, testing, performance issues',
-    '',
-    'Output ONLY the JSON object, no markdown fences, no explanation.',
+    'Analyze and report:',
+    '  - strengths: what the codebase does well',
+    '  - weaknesses: architecture or design gaps',
+    '  - missingFeatures: features a workflow engine should have',
+    '  - issues: code quality, error handling, testing, performance issues',
   ].join('\n'),
-  { label: 'scanner', model: 'glm-5.1' },
+  { label: 'scanner', model: 'glm-5.1', schema: SCAN_SCHEMA },
 )
 
-log('Scan complete, parsing result...')
-
-let scan
-if (typeof scanResult === 'string') {
-  try {
-    scan = JSON.parse(scanResult)
-  } catch {
-    const match = String(scanResult).match(/\{[\s\S]*\}/)
-    scan = match ? JSON.parse(match[0]) : { strengths: [], weaknesses: [], missingFeatures: [], issues: [] }
-  }
-} else if (scanResult && typeof scanResult === 'object') {
-  scan = scanResult
-} else {
-  scan = { strengths: [], weaknesses: [], missingFeatures: [], issues: [] }
+if (!scan) {
+  log('Scan failed, aborting.')
+  return []
 }
 
 log('Strengths: ' + (scan.strengths?.length ?? 0))
@@ -47,11 +87,13 @@ log('Weaknesses: ' + (scan.weaknesses?.length ?? 0))
 log('Missing features: ' + (scan.missingFeatures?.length ?? 0))
 log('Issues: ' + (scan.issues?.length ?? 0))
 
+// ── Phase 2: Review ───────────────────────────────────────────
+
 phase('review')
 
-const reviewResult = await agent(
+const review = await agent(
   [
-    'You are a senior TypeScript architect. You have scanned the AgentFlow project at /home/caosen/GitHub/agentflow.',
+    'You are a senior TypeScript architect reviewing the AgentFlow project at /home/caosen/GitHub/agentflow.',
     '',
     'Scan findings:',
     '  Strengths: ' + JSON.stringify(scan.strengths),
@@ -59,45 +101,26 @@ const reviewResult = await agent(
     '  Missing features: ' + JSON.stringify(scan.missingFeatures),
     '  Issues: ' + JSON.stringify(scan.issues),
     '',
-    'Now read the actual source files in src/ to verify these findings. Focus on:',
+    'Read the actual source files to verify these findings. Focus on:',
     '  src/core/engine.ts (the heart of the system)',
     '  src/core/agent.ts (SDK adapter)',
-    '  src/cli.ts (CLI entry)',
+    '  src/core/budget.ts (budget tracking)',
+    '  src/utils/ (utility modules)',
     '  tests/ (test coverage)',
     '',
-    'Then propose exactly 3 PRAGMATIC improvements. Criteria:',
+    'Propose exactly 3 PRAGMATIC improvements. Criteria:',
     '  - Each implementable in under 2 hours',
     '  - Clear, measurable benefit',
     '  - No "nice to have" — only material improvements',
-    '',
-    'Output a JSON array with exactly 3 objects, each having:',
-    '  title: string (imperative, e.g. "Add retry with backoff to agent calls")',
-    '  problem: string (1-2 sentences)',
-    '  solution: string (concrete: file names, what to change)',
-    '  effortMinutes: number',
-    '  impact: "high" | "medium" | "low"',
-    '',
-    'Output ONLY the JSON array, no markdown fences.',
   ].join('\n'),
-  { label: 'reviewer', model: 'glm-5.1' },
+  { label: 'reviewer', model: 'glm-5.1', schema: REVIEW_SCHEMA },
 )
 
-let improvements
-if (typeof reviewResult === 'string') {
-  try {
-    improvements = JSON.parse(reviewResult)
-  } catch {
-    const match = String(reviewResult).match(/\[[\s\S]*\]/)
-    improvements = match ? JSON.parse(match[0]) : []
-  }
-} else if (Array.isArray(reviewResult)) {
-  improvements = reviewResult
-} else {
-  improvements = []
-}
+const improvements = review?.improvements ?? []
 
 if (improvements.length === 0) {
-  log('No improvements returned, raw result: ' + JSON.stringify(reviewResult)?.slice(0, 200))
+  log('No improvements returned.')
+  return []
 }
 
 for (const imp of improvements) {

@@ -677,6 +677,36 @@ describe('executeAgent', () => {
     expect(budget.spent()).toBeLessThanOrEqual(0.02)
   })
 
+  it('strips markdown fences and parses JSON from result', async () => {
+    queryMock.mockImplementation(() => {
+      return createMockQuery([successResult({ result: '```json\n{"value":42}\n```' })])
+    })
+
+    const ctx = makeContext()
+    const result = await executeAgent<{ value: number }>('test', undefined, ctx)
+    expect(result).toEqual({ value: 42 })
+  })
+
+  it('strips ```-only fences and parses JSON from result', async () => {
+    queryMock.mockImplementation(() => {
+      return createMockQuery([successResult({ result: '```\n{"value":99}\n```' })])
+    })
+
+    const ctx = makeContext()
+    const result = await executeAgent<{ value: number }>('test', undefined, ctx)
+    expect(result).toEqual({ value: 99 })
+  })
+
+  it('returns raw string when result is not JSON', async () => {
+    queryMock.mockImplementation(() => {
+      return createMockQuery([successResult({ result: 'plain text response' })])
+    })
+
+    const ctx = makeContext()
+    const result = await executeAgent<string>('test', undefined, ctx)
+    expect(result).toBe('plain text response')
+  })
+
   it('defaults permissionMode to bypassPermissions when not set', async () => {
     const ctx = makeContext()
     await executeAgent('test', undefined, ctx)
