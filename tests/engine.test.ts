@@ -3,7 +3,7 @@ import { Engine } from '../src/core/engine.js'
 import { writeFile, mkdir, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const TMP = '/tmp/agentflow-test-scripts'
+const TMP = '/tmp/batonjs-test-scripts'
 
 async function withScript(content: string, fn: (path: string) => Promise<void>, ext = '.js') {
   await mkdir(TMP, { recursive: true })

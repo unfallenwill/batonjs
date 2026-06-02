@@ -126,7 +126,7 @@ phase('analyze')
 
 const analysis = await agent(
   [
-    'Analyze the circular dependency problem in the AgentFlow project at /home/caosen/GitHub/agentflow.',
+    'Analyze the circular dependency problem in the BatonJS project at /home/caosen/GitHub/batonjs.',
     '',
     'The current state:',
     '- src/types.ts defines AgentContext using STRUCTURAL types (e.g. { acquire(): Promise<() => void> }) instead of referencing the concrete Semaphore, BudgetTracker, EngineEventBus classes.',
@@ -195,7 +195,7 @@ phase('evaluate')
 
 const scored = await agent(
   [
-    'You are evaluating architectural approaches for the AgentFlow TypeScript project at /home/caosen/GitHub/agentflow.',
+    'You are evaluating architectural approaches for the BatonJS TypeScript project at /home/caosen/GitHub/batonjs.',
     '',
     'Given these candidate approaches:',
     JSON.stringify(approaches.approaches, null, 2),

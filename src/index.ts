@@ -1,4 +1,4 @@
-// AgentFlow — Workflow engine powered by Agent SDKs
+// BatonJS — Workflow engine powered by Agent SDKs
 
 // Engine
 export { Engine } from './core/engine.js'

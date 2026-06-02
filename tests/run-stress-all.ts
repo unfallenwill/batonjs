@@ -2,7 +2,7 @@ import { Engine } from '../src/index.js'
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
-const STRESS_DIR = './.agentflow/workflows/stress'
+const STRESS_DIR = './.batonjs/workflows/stress'
 
 const files = (await readdir(STRESS_DIR)).filter((f) => f.endsWith('.js')).sort()
 

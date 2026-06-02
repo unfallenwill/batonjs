@@ -1,4 +1,4 @@
-# AgentFlow
+# BatonJS
 
 A lightweight workflow engine that orchestrates AI agents via pluggable SDK backends. Define multi-phase workflows as plain scripts with built-in parallel execution, streaming pipelines, budget tracking, and structured output.
 
@@ -7,7 +7,7 @@ A lightweight workflow engine that orchestrates AI agents via pluggable SDK back
 ## Features
 
 - **Dual SDK backend** — Anthropic Claude or CodeBuddy, selectable at runtime via `--sdk`
-- **CLI** — `agentflow [options] <script>` with budget, concurrency, model, and SDK flags
+- **CLI** — `batonjs [options] <script>` with budget, concurrency, model, and SDK flags
 - **Script-based workflows** — Write workflows as `.js` or `.ts` with top-level `await`
 - **Structured output** — JSON Schema → validated output via AJV
 - **Parallel execution** — `parallel()` with semaphore-based concurrency control
@@ -23,7 +23,7 @@ A lightweight workflow engine that orchestrates AI agents via pluggable SDK back
 ## Quick Start
 
 ```bash
-npm install agentflow
+npm install batonjs
 ```
 
 Write a workflow script:
@@ -57,15 +57,15 @@ return { summary }
 Run it from the command line:
 
 ```bash
-agentflow ./workflow.js
-agentflow --sdk codebuddy --budget 5.0 ./workflow.js
-agentflow ./workflow.js --args '{"target": "src/"}'
+batonjs ./workflow.js
+batonjs --sdk codebuddy --budget 5.0 ./workflow.js
+batonjs ./workflow.js --args '{"target": "src/"}'
 ```
 
 Or use the programmatic API:
 
 ```ts
-import { Engine } from 'agentflow'
+import { Engine } from 'batonjs'
 
 const engine = new Engine({
   scriptPath: './workflow.js',
@@ -93,7 +93,7 @@ if (result.ok) {
 ## CLI
 
 ```
-agentflow [options] [script]
+batonjs [options] [script]
 
 Options:
   --args <json>       Pass arguments as the `args` global

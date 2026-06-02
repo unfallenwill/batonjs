@@ -71,7 +71,7 @@ describe('EngineEventBus', () => {
     })
     bus.emit({ kind: 'log', message: 'test' })
     expect(errorSpy).toHaveBeenCalledTimes(1)
-    expect(errorSpy).toHaveBeenCalledWith('[AgentFlow] Event handler threw:', expect.any(Error))
+    expect(errorSpy).toHaveBeenCalledWith('[BatonJS] Event handler threw:', expect.any(Error))
     errorSpy.mockRestore()
   })
 })

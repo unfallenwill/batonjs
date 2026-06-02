@@ -9,7 +9,7 @@ function fatal(message: string): never {
   process.exit(1)
 }
 
-const cli = cac('agentflow')
+const cli = cac('batonjs')
 
 cli
   .command('[script]', 'Run a workflow script')
@@ -19,10 +19,10 @@ cli
   .option('--cwd <dir>', 'Working directory for agents (default: .)')
   .option('--model <model>', 'Default model for agents')
   .option('--sdk <name>', "SDK backend: 'anthropic' (default) or 'codebuddy'")
-  .example('agentflow ./workflows/demo.js')
-  .example('agentflow --sdk codebuddy ./workflows/demo.js')
-  .example('agentflow ./workflows/demo.js --args \'{"target": "src/"}\'')
-  .example('agentflow ./workflows/demo.js --budget 5.0 --concurrency 5')
+  .example('batonjs ./workflows/demo.js')
+  .example('batonjs --sdk codebuddy ./workflows/demo.js')
+  .example('batonjs ./workflows/demo.js --args \'{"target": "src/"}\'')
+  .example('batonjs ./workflows/demo.js --budget 5.0 --concurrency 5')
   .action((script: string | undefined, options: Record<string, unknown>) => {
     if (script === undefined) {
       cli.outputHelp()

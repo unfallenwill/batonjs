@@ -1,6 +1,6 @@
 export const meta = {
   name: 'project-review',
-  description: 'Review AgentFlow codebase and propose 3 pragmatic improvements',
+  description: 'Review BatonJS codebase and propose 3 pragmatic improvements',
   phases: [
     { title: 'scan', detail: 'Deep scan of source and tests' },
     { title: 'review', detail: 'Identify top 3 pragmatic improvements' },
@@ -64,7 +64,7 @@ phase('scan')
 
 const scan = await agent(
   [
-    'Read ALL source files in src/ and ALL test files in tests/ of the AgentFlow project at /home/caosen/GitHub/agentflow.',
+    'Read ALL source files in src/ and ALL test files in tests/ of the BatonJS project at /home/caosen/GitHub/batonjs.',
     '',
     'This is a TypeScript workflow engine that orchestrates AI agents via the CodeBuddy Agent SDK.',
     '',
@@ -93,7 +93,7 @@ phase('review')
 
 const review = await agent(
   [
-    'You are a senior TypeScript architect reviewing the AgentFlow project at /home/caosen/GitHub/agentflow.',
+    'You are a senior TypeScript architect reviewing the BatonJS project at /home/caosen/GitHub/batonjs.',
     '',
     'Scan findings:',
     '  Strengths: ' + JSON.stringify(scan.strengths),

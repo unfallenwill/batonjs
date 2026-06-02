@@ -24,7 +24,7 @@ import { createSdkProvider } from './sdk.js'
 import type { SdkProvider } from './sdk.js'
 
 /** @internal Brand symbol for SharedState discrimination */
-const _sharedBrand: unique symbol = Symbol('agentflow:shared-state')
+const _sharedBrand: unique symbol = Symbol('batonjs:shared-state')
 
 /** Internal shared state passed from parent to child engine */
 interface SharedState {
@@ -47,7 +47,7 @@ function escapeRegex(s: string): string {
 }
 
 /**
- * AgentFlow workflow engine.
+ * BatonJS workflow engine.
  *
  * Loads a workflow script, injects globals (agent, parallel, pipeline,
  * phase, log, budget, args, workflow), and executes it.

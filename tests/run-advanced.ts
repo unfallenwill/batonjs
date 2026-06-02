@@ -1,7 +1,7 @@
 import { Engine } from '../src/index.js'
 
 const engine = new Engine({
-  scriptPath: './.agentflow/workflows/advanced-workflow-demo.js',
+  scriptPath: './.batonjs/workflows/advanced-workflow-demo.js',
   cwd: process.cwd(),
 })
 

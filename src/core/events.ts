@@ -24,7 +24,7 @@ export class EngineEventBus {
       try {
         handler(event)
       } catch (error: unknown) {
-        console.error('[AgentFlow] Event handler threw:', error)
+        console.error('[BatonJS] Event handler threw:', error)
       }
     }
   }
