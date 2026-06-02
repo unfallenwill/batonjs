@@ -22,9 +22,9 @@ cli
   .option('--timeout <minutes>', 'Agent call timeout in minutes (default: 2)')
   .example('batonjs ./workflows/demo.js')
   .example('batonjs --sdk codebuddy ./workflows/demo.js')
-  .example('batonjs ./workflows/demo.js --args \'{"target": "src/"}\'')
-  .example('batonjs ./workflows/demo.js --budget 5.0 --concurrency 5')
-  .example('batonjs ./workflows/demo.js --timeout 5')
+  .example('batonjs --args \'{"target": "src/"}\' ./workflows/demo.js')
+  .example('batonjs --budget 5.0 --concurrency 5 ./workflows/demo.js')
+  .example('batonjs --timeout 5 ./workflows/demo.js')
   .action((script: string | undefined, options: Record<string, unknown>) => {
     if (script === undefined) {
       cli.outputHelp()
