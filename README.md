@@ -10,31 +10,22 @@
 [![Node.js >=18](https://img.shields.io/node/v/batonjs.svg)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg)](https://www.typescriptlang.org/)
 
-BatonJS lets you write multi-agent AI workflows as plain async JavaScript scripts, with simple globals like `agent()`, `parallel()`, and `pipeline()` that handle concurrency, budgeting, retries, and structured output validation automatically. It's SDK-agnostic out of the box, supporting Anthropic Claude, Tencent CodeBuddy, OpenAI Codex, and Reasonix through pluggable adapters — swap backends without rewriting your workflows. Whether you're running a one-off automation or a production pipeline, BatonJS gives you deterministic control flow with the ergonomics of a script and the reliability of an engine.
-
+A TypeScript-based workflow script runner for coding agents.
 ---
 
 ## Why BatonJS?
 
-Building multi-agent AI workflows shouldn't mean wrestling with orchestration boilerplate. BatonJS gives you **plain async JavaScript/TypeScript** with a small set of script globals — the engine handles the rest.
+A TypeScript-based workflow script runner for coding agents. Write plain `async`/`await` scripts with a small set of injected globals — the engine handles concurrency, retries, budget tracking, and SDK orchestration.
 
-- ✅ **SDK-agnostic adapters** — Pluggable adapters for Anthropic Claude, Tencent CodeBuddy, OpenAI Codex, and Reasonix. Swap providers without rewriting workflow logic; verify by checking `src/adapters/` for each concrete implementation.
+- **SDK-agnostic** — Pluggable adapters for Anthropic Claude, Tencent CodeBuddy, OpenAI Codex, and Reasonix. Swap providers without rewriting workflow logic.
 
-- ✅ **Six script globals, zero boilerplate** — `agent()`, `parallel()`, `pipeline()`, `phase()`, `log()`, and `budget` are all you need. Write standard `async`/`await` code; no class inheritance, decorators, or DSL to learn.
+- **Zero boilerplate** — `agent()`, `parallel()`, `pipeline()`, `phase()`, `log()`, and `budget` are all you need. No class inheritance, decorators, or DSL.
 
-- ✅ **Automatic concurrency & throttling** — The engine caps concurrent agent calls at `min(16, cpuCores − 2)` and queues the rest. You call `parallel([...])` with 100 items and it runs correctly without manual semaphore management.
+- **Automatic concurrency & throttling** — `parallel([...])` handles hundreds of items with automatic semaphore management.
 
-- ✅ **Built-in budget tracking** — Pass a token budget (e.g. `+500k`), and every `agent()` call deducts from the shared pool. The loop exits automatically when `budget.remaining()` hits zero — no overspend, no manual accounting.
+- **Built-in budget tracking** — Every `agent()` call deducts from a shared pool; loops exit automatically when budget is exhausted.
 
-- ✅ **Retry with exponential backoff** — Transient API failures are retried transparently. Configure per-adapter retry counts and backoff multipliers in your adapter config; the engine handles sleep-and-retry internally.
-
-- ✅ **Structured output enforcement** — Pass a JSON Schema to `agent()` and the engine validates the response at the tool-call layer, retrying on mismatch. You get typed results without writing your own parsing or validation code.
-
-- ✅ **Nested sub-workflows** — Call `workflow(nameOrRef, args)` inside a running workflow to compose multi-phase pipelines. Child workflows share the parent's concurrency cap, abort signal, and budget — no context leakage.
-
-- ✅ **Timeout & abort signals** — Every agent call respects a configurable timeout; a parent abort propagates to all in-flight children. Verify by setting a short timeout and observing clean cancellation in logs.
-
-BatonJS is for developers who want **programmatic control** over multi-agent pipelines — not a heavy framework, not a visual DAG editor, just a minimal engine that makes concurrent AI calls correct and composable.
+- **Retry, structured output, sub-workflows** — Exponential backoff for transient failures, JSON Schema validation for typed results, and nested workflow composition — all out of the box.
 
 ---
 
