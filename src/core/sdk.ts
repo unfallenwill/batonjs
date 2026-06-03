@@ -29,6 +29,10 @@ export async function createSdkProvider(name: SdkName): Promise<SdkProvider> {
       const { createCodexAdapter } = await import('./adapters/codex.js')
       return createCodexAdapter()
     }
+    case 'reasonix': {
+      const { createReasonixAdapter } = await import('./adapters/reasonix.js')
+      return createReasonixAdapter()
+    }
     default: {
       const _exhaustive: never = name
       throw new Error(`Unknown SDK: ${String(_exhaustive)}`)
