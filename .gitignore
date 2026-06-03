@@ -6,3 +6,6 @@ coverage/
 # Workflow scripts (local only)
 .claude/workflows/
 .batonjs/
+.env
+reasonix.toml
+.codegraph/

@@ -12,7 +12,7 @@ cli
   .option('--budget <usd>', 'Set max budget in USD (default: unlimited)')
   .option('--concurrency <n>', 'Max concurrent agents (default: 2)')
   .option('--cwd <dir>', 'Working directory for agents (default: .)')
-  .option('--sdk <name>', "SDK backend: 'anthropic' (default), 'codebuddy', or 'codex'")
+  .option('--sdk <name>', "SDK backend: 'anthropic' (default), 'codebuddy', 'codex', or 'reasonix'")
   .option('--timeout <minutes>', 'Agent call timeout in minutes (default: 5)')
   .option('--verbose', 'Show debug-level output (agent internals)')
   .option('--quiet', 'Suppress progress output (only errors)')
@@ -78,8 +78,15 @@ cli
     let sdk: SdkName | undefined
     if (options['sdk'] !== undefined) {
       const sdkName = String(options['sdk'])
-      if (sdkName !== 'anthropic' && sdkName !== 'codebuddy' && sdkName !== 'codex') {
-        consola.fatal(`--sdk must be 'anthropic', 'codebuddy', or 'codex', got: ${sdkName}`)
+      if (
+        sdkName !== 'anthropic' &&
+        sdkName !== 'codebuddy' &&
+        sdkName !== 'codex' &&
+        sdkName !== 'reasonix'
+      ) {
+        consola.fatal(
+          `--sdk must be 'anthropic', 'codebuddy', 'codex', or 'reasonix', got: ${sdkName}`,
+        )
         process.exit(1)
       }
       sdk = sdkName
