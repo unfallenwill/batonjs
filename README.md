@@ -11,6 +11,7 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6.svg)](https://www.typescriptlang.org/)
 
 A TypeScript-based workflow script runner for coding agents.
+
 ---
 
 ## Why BatonJS?
