@@ -184,8 +184,6 @@ export async function executeAgent<T = unknown>(
 
     if (opts?.model !== undefined) {
       sdkOpts.model = opts.model
-    } else if (ctx.defaultModel !== undefined) {
-      sdkOpts.model = ctx.defaultModel
     }
 
     if (opts?.effort !== undefined) {

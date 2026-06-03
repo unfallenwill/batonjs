@@ -17,7 +17,6 @@ cli
   .option('--budget <usd>', 'Set max budget in USD (default: unlimited)')
   .option('--concurrency <n>', 'Max concurrent agents (default: 2)')
   .option('--cwd <dir>', 'Working directory for agents (default: .)')
-  .option('--model <model>', 'Default model for agents')
   .option('--sdk <name>', "SDK backend: 'anthropic' (default), 'codebuddy', or 'codex'")
   .option('--timeout <minutes>', 'Agent call timeout in minutes (default: 5)')
   .option(
@@ -96,7 +95,6 @@ cli
     if (workflowArgs !== undefined) engineOpts.args = workflowArgs
     if (maxBudgetUsd !== undefined) engineOpts.maxBudgetUsd = maxBudgetUsd
     if (maxConcurrency !== undefined) engineOpts.maxConcurrency = maxConcurrency
-    if (options['model'] !== undefined) engineOpts.defaultModel = String(options['model'])
     if (sdk !== undefined) engineOpts.sdk = sdk
     if (effort !== undefined) engineOpts.effort = effort
     if (options['timeout'] !== undefined) {
