@@ -10,7 +10,10 @@ export async function createCodebuddyAdapter(): Promise<SdkProvider> {
     query: (params) =>
       sdk.query({
         prompt: params.prompt,
-        options: params.options as NonNullable<Parameters<typeof sdk.query>[0]['options']>,
+        options: {
+          ...params.options,
+          settingSources: ['user', 'project'],
+        } as NonNullable<Parameters<typeof sdk.query>[0]['options']>,
       }) as SdkQueryHandle,
   }
 }
