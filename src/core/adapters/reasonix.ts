@@ -114,6 +114,9 @@ const ANSI_RE = /\x1b\[[0-9;]*m/g
 // Trailing token-usage line: "  · 11067 tok · in 11028 (11008 cached / 20 new) · out 39 (19 reasoning) · ¥0.0003"
 const TOKEN_STATS_RE = /\n?\s*·\s*\d+\s*tok\s*·\s*in\s+\d+.*?(?:\$|¥)\s*\d+\.\d+.*$/
 
+// Leading "▎ thinking" marker (plain text, after ANSI codes stripped)
+const THINKING_MARKER_RE = /^\s*▎\s*thinking\s*\n?/
+
 /**
  * Clean reasonix stdout to extract the pure response text.
  *
@@ -126,6 +129,8 @@ export function cleanOutput(raw: string): string {
   text = text.replace(ANSI_RE, '')
   // Remove trailing token stats line
   text = text.replace(TOKEN_STATS_RE, '')
+  // Remove leading "▎ thinking" plain-text marker
+  text = text.replace(THINKING_MARKER_RE, '')
   return text.trim()
 }
 

@@ -145,9 +145,9 @@ describe('parseMetrics', () => {
 // ── cleanOutput ────────────────────────────────────────────────────────
 
 describe('cleanOutput', () => {
-  it('strips ANSI escape codes', () => {
+  it('strips ANSI escape codes and thinking marker', () => {
     const raw = '\u001b[2m  ▎ thinking\u001b[0m\nHello, World!'
-    expect(cleanOutput(raw)).toBe('▎ thinking\nHello, World!')
+    expect(cleanOutput(raw)).toBe('Hello, World!')
   })
 
   it('strips trailing token stats line', () => {
@@ -159,7 +159,12 @@ describe('cleanOutput', () => {
   it('strips token stats from ANSI content', () => {
     const raw =
       '\u001b[2m  ▎ thinking\u001b[0m\nSome text\n  · 11067 tok · in 11028 (11008 cached / 20 new) · out 39 (19 reasoning) · ¥0.0003'
-    expect(cleanOutput(raw)).toBe('▎ thinking\nSome text')
+    expect(cleanOutput(raw)).toBe('Some text')
+  })
+
+  it('strips plain-text thinking marker without ANSI', () => {
+    const raw = '▎ thinking\nHello!'
+    expect(cleanOutput(raw)).toBe('Hello!')
   })
 
   it('returns clean text unchanged', () => {
