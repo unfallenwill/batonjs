@@ -27,7 +27,7 @@ export function createSchemaValidationHook(schema: Record<string, unknown>) {
 
       for (let i = lines.length - 1; i >= 0; i--) {
         try {
-          const msg = JSON.parse(lines[i]) as TranscriptMessage
+          const msg = JSON.parse(lines[i]!) as TranscriptMessage
           if (msg.type === 'assistant' && msg.message?.content) {
             const textBlocks = msg.message.content.filter(
               (block): block is { type: 'text'; text: string } =>
@@ -67,10 +67,9 @@ export function createSchemaValidationHook(schema: Record<string, unknown>) {
       }
 
       return { continue: true }
-    } catch (e) {
+    } catch {
       // If we can't read the transcript or anything else goes wrong, don't block the stop
-      const msg = e instanceof Error ? e.message : String(e)
-      return { continue: true } // Don't block on internal errors
+      return { continue: true }
     }
   }
 }
@@ -91,7 +90,7 @@ export async function createCodebuddyAdapter(): Promise<SdkProvider> {
       // When schema is provided, register a Stop hook to validate output in-session
       if (params.options.outputFormat) {
         const schema = params.options.outputFormat.schema
-        opts.hooks = {
+        opts['hooks'] = {
           Stop: [
             {
               hooks: [createSchemaValidationHook(schema)],
