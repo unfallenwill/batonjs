@@ -95,11 +95,14 @@ export function createEventBridge(logger: ConsolaInstance): EngineEventHandler {
         const key = event.label ?? `agent-${agentCounter++}`
         const title = event.label ?? 'agent'
 
-        // Build subtitle from SDK params
+        // Print agent config info via consola (system settings, not runtime progress)
         const parts: string[] = []
-        if (event.sdk?.model) parts.push(event.sdk.model)
+        if (event.sdk?.model) parts.push(`model: ${event.sdk.model}`)
         if (event.sdk?.effort) parts.push(`effort: ${event.sdk.effort}`)
-        const subtitle = parts.length > 0 ? ` (${parts.join(', ')})` : ''
+        if (event.sdk?.permissionMode) parts.push(`permission: ${event.sdk.permissionMode}`)
+        if (parts.length > 0) {
+          logger.info(`agent "${title}" — ${parts.join(', ')}`)
+        }
 
         let taskResolve: () => void
         let taskReject: (error: Error) => void
@@ -115,7 +118,7 @@ export function createEventBridge(logger: ConsolaInstance): EngineEventHandler {
 
         if (rootListr) {
           rootListr.add({
-            title: `→ ${title}${subtitle}`,
+            title: `→ ${title}`,
             task: () => taskPromise,
           })
         }
