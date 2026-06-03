@@ -48,11 +48,11 @@ describe('CLI argument validation', () => {
   it('rejects --sdk with invalid value', () => {
     const result = runCli(['dummy.js', '--sdk', 'invalid'])
     expect(result.exitCode).toBe(1)
-    expect(result.stderr).toContain("must be 'anthropic', 'codebuddy', 'codex', or 'reasonix'")
+    expect(result.stderr).toContain("must be 'claude', 'codebuddy', 'codex', or 'reasonix'")
   })
 
-  it('accepts --sdk anthropic', () => {
-    const result = runCli(['dummy.js', '--sdk', 'anthropic'])
+  it('accepts --sdk claude', () => {
+    const result = runCli(['dummy.js', '--sdk', 'claude'])
     // Will fail because dummy.js doesn't exist, but should NOT fail on --sdk
     expect(result.stderr).not.toContain('--sdk must be')
   })

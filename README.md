@@ -101,7 +101,7 @@ batonjs [options] <script>
 | `--budget <usd>` | Max spend in USD | unlimited |
 | `--concurrency <n>` | Max concurrent agents | 2 |
 | `--cwd <dir>` | Working directory for agents | `.` |
-| `--sdk <name>` | `anthropic`, `codebuddy`, `codex`, or `reasonix` | `anthropic` |
+| `--sdk <name>` | `claude`, `codebuddy`, `codex`, or `reasonix` | `claude` |
 | `--timeout <minutes>` | Per-agent timeout in minutes | 5 |
 | `-h, --help` | Show help | — |
 
@@ -185,7 +185,7 @@ import { Engine } from 'batonjs'
 
 const engine = new Engine({
   scriptPath: './workflow.js',
-  sdk: 'anthropic',       // or 'codebuddy', 'codex', or 'reasonix'
+  sdk: 'claude',       // or 'codebuddy', 'codex', or 'reasonix'
   maxBudgetUsd: 2.0,
   maxConcurrency: 5,
 })
@@ -252,7 +252,7 @@ Pluggable backends that translate BatonJS calls into provider-specific SDK opera
 | Export | Description |
 |--------|-------------|
 | **`createSdkProvider`** | Factory — returns an `SdkProvider` for a given backend name. |
-| **`SdkName`** | Union: `'anthropic' \| 'codebuddy' \| 'codex' \| 'reasonix'`. |
+| **`SdkName`** | Union: `'claude' \| 'codebuddy' \| 'codex' \| 'reasonix'`. |
 | **`SdkProvider`** | Contract: `{ query(options): SdkQueryHandle }`. |
 | **`SdkQueryOptions`** | Options for a query call: `permissionMode`, `abortController`, `outputFormat`, `model`, `cwd`, `maxBudgetUsd`, `effort`. |
 | **`SdkQueryHandle`** | Async-iterable handle with `interrupt()` and `return()` cleanup. |
@@ -261,7 +261,7 @@ Pluggable backends that translate BatonJS calls into provider-specific SDK opera
 
 ```ts
 import { createSdkProvider } from "batonjs";
-const sdk = createSdkProvider("anthropic");
+const sdk = createSdkProvider("claude");
 const handle = sdk.query({ model: "claude-sonnet-4-20250514", permissionMode: "auto" });
 ```
 
@@ -326,7 +326,7 @@ const budget = new BudgetTracker(10.0); // $10 USD cap
 
 | Backend | `--sdk` value | Package |
 |---------|--------------|---------|
-| Anthropic Claude | `anthropic` (default) | `@anthropic-ai/claude-agent-sdk` |
+| Anthropic Claude | `claude` (default) | `@anthropic-ai/claude-agent-sdk` |
 | Tencent CodeBuddy | `codebuddy` | `@tencent-ai/agent-sdk` |
 | OpenAI Codex | `codex` | `@openai/codex-sdk` |
 | Reasonix | `reasonix` | CLI binary (`reasonix run`) |

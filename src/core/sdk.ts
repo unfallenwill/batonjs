@@ -17,7 +17,7 @@ import type { SdkName, SdkProvider } from './sdk-types.js'
  */
 export async function createSdkProvider(name: SdkName): Promise<SdkProvider> {
   switch (name) {
-    case 'anthropic': {
+    case 'claude': {
       const { createAnthropicAdapter } = await import('./adapters/anthropic.js')
       return createAnthropicAdapter()
     }

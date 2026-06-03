@@ -114,7 +114,7 @@ export class Engine {
     const sdk: SdkProvider =
       this.shared !== undefined
         ? this.shared.sdk
-        : await createSdkProvider(this.opts.sdk ?? 'anthropic')
+        : await createSdkProvider(this.opts.sdk ?? 'claude')
 
     // 1. Load and parse script
     const loaded = await this.loadScript(this.opts.scriptPath)

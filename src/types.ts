@@ -81,7 +81,7 @@ export interface EngineOptions {
   cwd?: string
   /** Permission mode for all agent queries */
   permissionMode?: PermissionMode
-  /** SDK backend to use. Default: 'anthropic' */
+  /** SDK backend to use. Default: 'claude' */
   sdk?: SdkName
   /** Timeout in ms for every agent call in this workflow (default: 300000). Must be a positive integer. */
   agentTimeoutMs?: number

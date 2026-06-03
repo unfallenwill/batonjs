@@ -1,5 +1,5 @@
 /** Supported SDK backend names */
-export type SdkName = 'anthropic' | 'codebuddy' | 'codex' | 'reasonix'
+export type SdkName = 'claude' | 'codebuddy' | 'codex' | 'reasonix'
 
 /**
  * Options passed to the SDK query function.
