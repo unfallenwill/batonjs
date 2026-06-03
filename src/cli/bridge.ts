@@ -99,9 +99,12 @@ export function createEventBridge(logger: ConsolaInstance): EngineEventHandler {
         const parts: string[] = []
         if (event.sdk?.model) parts.push(`model: ${event.sdk.model}`)
         if (event.sdk?.effort) parts.push(`effort: ${event.sdk.effort}`)
-        if (event.sdk?.permissionMode) parts.push(`permission: ${event.sdk.permissionMode}`)
+        if (event.sdk?.permissionMode && event.sdk.permissionMode !== 'bypassPermissions') {
+          parts.push(`permission: ${event.sdk.permissionMode}`)
+        }
         if (parts.length > 0) {
-          logger.info(`agent "${title}" — ${parts.join(', ')}`)
+          const label = event.label ? ` "${event.label}"` : ''
+          logger.info(`agent${label} — ${parts.join(', ')}`)
         }
 
         let taskResolve: () => void
