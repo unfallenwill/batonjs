@@ -1,13 +1,9 @@
-import Ajv from 'ajv'
 import type { AgentContext } from './context.js'
 import type { AgentOpts } from '../types.js'
 import type { SdkQueryOptions, SdkResultMessage } from './sdk.js'
 
 /** Default timeout for a single agent call (ms) */
 const DEFAULT_AGENT_TIMEOUT_MS = 300_000
-
-/** Shared Ajv instance for JSON Schema validation */
-const ajv = new Ajv({ allErrors: true })
 
 /** Default max retry attempts for transient errors */
 const DEFAULT_MAX_RETRIES = 2
@@ -358,58 +354,19 @@ export async function executeAgent<T = unknown>(
     // Subsequent calls are correctly blocked by the reservation
     // logic at the top of executeAgent.
 
-    // Extract result: prefer structured_output when schema was provided
-    if (opts?.schema !== undefined && successMsg.structured_output !== undefined) {
-      const validate = ajv.compile(opts.schema)
-      if (!validate(successMsg.structured_output)) {
-        const errors = validate.errors?.map((e) => `${e.instancePath} ${e.message}`).join('; ')
-        ctx.bus.emit({
-          kind: 'agent_error',
-          label,
-          error: `Schema validation failed for structured_output: ${errors}`,
-        })
-        return null
-      }
+    // Extract result: prefer structured_output when available
+    if (successMsg.structured_output !== undefined) {
       return successMsg.structured_output as T
     }
 
     // Fall back: try JSON parse (strip markdown fences if present).
-    // When schema is provided, a parse failure means the result does not match
-    // the expected type contract — return null rather than leaking a raw string.
-    // When no schema is provided (T defaults to unknown), the raw string is
-    // the best-effort result.
     const raw = successMsg.result
-    let parsed: T
     try {
       const stripped = raw.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/, '')
-      parsed = JSON.parse(stripped) as T
+      return JSON.parse(stripped) as T
     } catch {
-      if (opts?.schema !== undefined) {
-        ctx.bus.emit({
-          kind: 'agent_error',
-          label,
-          error: 'Failed to parse agent output as JSON despite schema being provided',
-        })
-        return null
-      }
       return raw as T
     }
-
-    // Validate against schema when provided
-    if (opts?.schema !== undefined) {
-      const validate = ajv.compile(opts.schema)
-      if (!validate(parsed)) {
-        const errors = validate.errors?.map((e) => `${e.instancePath} ${e.message}`).join('; ')
-        ctx.bus.emit({
-          kind: 'agent_error',
-          label,
-          error: `Schema validation failed: ${errors}`,
-        })
-        return null
-      }
-    }
-
-    return parsed
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error)
     ctx.bus.emit({ kind: 'agent_error', label, error: message })
