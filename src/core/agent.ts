@@ -1,4 +1,5 @@
 import Ajv from 'ajv'
+import { consola } from 'consola'
 import type { AgentContext } from './context.js'
 import type { AgentOpts } from '../types.js'
 import type { SdkQueryOptions, SdkResultMessage } from './sdk.js'
@@ -152,6 +153,7 @@ export async function executeAgent<T = unknown>(
   const maxRetries: number = rawMaxRetries
 
   ctx.bus.emit({ kind: 'agent_start', label, phase })
+  consola.debug(`[${label ?? 'agent'}] Agent call started`)
 
   const release = await ctx.semaphore.acquire()
   const startTime = Date.now()
@@ -222,6 +224,7 @@ export async function executeAgent<T = unknown>(
       budgetReserved = true
       reservedAmount = perAgentCap
       sdkOpts.maxBudgetUsd = perAgentCap
+      consola.debug(`[${label ?? 'agent'}] Budget reserved: $${perAgentCap.toFixed(4)}`)
     }
 
     // Forward engine-level abort signal
@@ -264,6 +267,9 @@ export async function executeAgent<T = unknown>(
       lastError = queryOutput.error
       if (attempt < maxRetries) {
         const delay = backoffDelay(attempt)
+        consola.debug(
+          `[${label ?? 'agent'}] Retry ${attempt + 1}/${maxRetries} in ${delay}ms: ${lastError}`,
+        )
         ctx.bus.emit({
           kind: 'agent_error',
           label,
@@ -350,6 +356,7 @@ export async function executeAgent<T = unknown>(
 
     const duration = Date.now() - startTime
     ctx.bus.emit({ kind: 'agent_end', label, cost: costUsd, duration_ms: duration })
+    consola.debug(`[${label ?? 'agent'}] Cost: $${costUsd.toFixed(4)}, Duration: ${duration}ms`)
 
     // Note: we intentionally do NOT check budget.isExceeded() here.
     // The cost has already been incurred and the result is valid —

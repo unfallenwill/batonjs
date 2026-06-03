@@ -87,4 +87,16 @@ describe('CLI argument validation', () => {
     const result = runCli(['dummy.js', '--effort', 'xhigh'])
     expect(result.stderr).not.toContain('--effort must be')
   })
+
+  it('accepts --verbose flag', () => {
+    const result = runCli(['dummy.js', '--verbose'])
+    // Will fail because dummy.js doesn't exist, but should NOT fail on --verbose
+    expect(result.stderr).not.toContain('--verbose')
+  })
+
+  it('accepts --quiet flag', () => {
+    const result = runCli(['dummy.js', '--quiet'])
+    // Will fail because dummy.js doesn't exist, but should NOT fail on --quiet
+    expect(result.stderr).not.toContain('--quiet')
+  })
 })
